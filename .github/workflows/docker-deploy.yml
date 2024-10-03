@@ -22,8 +22,8 @@ jobs:
       - name: Build and Test with Maven  # 使用 Maven 構建應用並運行測試
         run: mvn clean package
 
-      - name: Upload build artifacts  # 上傳構建產物
-        uses: actions/upload-artifact@v2
+      - name: Upload build artifacts  # 上傳構建產物，使用新版的 v3
+        uses: actions/upload-artifact@v3
         with:
           name: maven-artifacts
           path: target/*.jar
