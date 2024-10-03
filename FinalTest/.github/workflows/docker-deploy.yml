@@ -33,13 +33,13 @@ jobs:
 
       - name: Build Docker image  # 構建 Docker 映像，使用多個標籤
         run: |
-          docker build -t your-dockerhub-username/your-app-image-name:${{ github.sha }} .
-          docker tag your-dockerhub-username/your-app-image-name:${{ github.sha }} your-dockerhub-username/your-app-image-name:latest
+          docker build -t lunawewe/my-app:${{ github.sha }} .
+          docker tag lunawewe/my-app:${{ github.sha }} lunawewe/my-app:latest
 
       - name: Push Docker image to Docker Hub  # 推送 Docker 映像到 Docker Hub
         run: |
-          docker push your-dockerhub-username/your-app-image-name:${{ github.sha }}
-          docker push your-dockerhub-username/your-app-image-name:latest
+          docker push lunawewe/my-app:${{ github.sha }}
+          docker push lunawewe/my-app:latest
 
       - name: Clean up Docker images  # 清理 Docker 映像
         run: docker image prune -f

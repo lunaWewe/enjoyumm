@@ -7,6 +7,6 @@ RUN mvn clean package -DskipTests
 # 使用 OpenJDK 17 作為運行階段
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
-COPY --from=build /app/target/your-app.jar /app/your-app.jar
+COPY --from=build /app/target/my-app.jar /app/my-app.jar
 EXPOSE 8080
-CMD ["java", "-jar", "/app/your-app.jar"]
+CMD ["java", "-jar", "/app/my-app.jar"]
