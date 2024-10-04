@@ -67,8 +67,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 確保清理端口 8080 和停止相關的進程
-            sudo fuser -k 8080/tcp || true
+            # 檢查占用 8080 的進程並強制終止
+            sudo lsof -i tcp:8080 | grep LISTEN | awk '{print $2}' | xargs -r sudo kill -9 || true
             # 停止舊的容器
             sudo docker ps -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker stop || true
             sudo docker ps -a -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker rm || true
