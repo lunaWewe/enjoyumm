@@ -17,13 +17,13 @@ jobs:
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
 
     steps:
-      - name: Checkout code  # 第一步：檢出代碼
+      - name: Checkout code  # 檢出代碼
         uses: actions/checkout@v2
 
       - name: Set up JDK 17  # 設置 Java 環境
         uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'  # 使用 Eclipse Temurin JDK
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Build and Test with Maven  # 使用 Maven 構建應用並運行測試
@@ -35,27 +35,39 @@ jobs:
           SPRING_JPA_HIBERNATE_DDL_AUTO: ${{ env.SPRING_JPA_HIBERNATE_DDL_AUTO }}
           SPRING_JPA_DATABASE_PLATFORM: ${{ env.SPRING_JPA_DATABASE_PLATFORM }}
 
-
-
       - name: Upload build artifacts  # 上傳構建產物，使用新版的 v3
         uses: actions/upload-artifact@v3
         with:
           name: maven-artifacts
           path: target/*.jar
 
-      - name: Log in to Docker Hub  # 使用 Docker Hub 訪問令牌登錄
+      - name: Log in to Docker Hub  # 登錄 Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-      - name: Build Docker image  # 構建 Docker 映像，使用多個標籤
+      - name: Build Docker image  # 構建 Docker 映像
         run: |
           docker build -t lunawewe/my-app:${{ github.sha }} .
           docker tag lunawewe/my-app:${{ github.sha }} lunawewe/my-app:latest
 
-
-      - name: Push Docker image to Docker Hub  # 推送 Docker 映像到 Docker Hub
+      - name: Push Docker image to Docker Hub  # 推送 Docker 映像
         run: |
           docker push lunawewe/my-app:${{ github.sha }}
           docker push lunawewe/my-app:latest
 
-      - name: Clean up Docker images  # 清理 Docker 映像
-        run: docker image prune -f
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ec2-user  # 默認 EC2 使用者
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # 更新容器鏡像並重新啟動服務
+            sudo docker pull lunawewe/my-app:latest
+            sudo docker stop $(sudo docker ps -q --filter ancestor=lunawewe/my-app:latest) || true
+            sudo docker run -d -p 8080:8080 lunawewe/my-app:latest
