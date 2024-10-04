@@ -36,6 +36,7 @@ jobs:
           SPRING_JPA_DATABASE_PLATFORM: ${{ env.SPRING_JPA_DATABASE_PLATFORM }}
 
 
+
       - name: Upload build artifacts  # 上傳構建產物，使用新版的 v3
         uses: actions/upload-artifact@v3
         with:
