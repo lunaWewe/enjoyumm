@@ -7,6 +7,8 @@ RUN mvn clean package -DskipTests
 # 使用 OpenJDK 17 作為運行階段
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
+
+# 確保 jar 文件名稱正確匹配
 COPY --from=build /app/target/FinalTest-0.0.1-SNAPSHOT.jar /app/my-app.jar
 
 EXPOSE 8080
