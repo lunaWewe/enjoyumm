@@ -9,6 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest  # 使用最新的 Ubuntu 作為運行環境
 
+    env:  # 定義全局環境變數
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-final1.cfs6q6y6sz3f.ap-southeast-2.rds.amazonaws.com:3306/final
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: Amazon0624
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+
     steps:
       - name: Checkout code  # 第一步：檢出代碼
         uses: actions/checkout@v2
