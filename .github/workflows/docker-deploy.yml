@@ -67,13 +67,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 檢查占用 8080 的進程並強制終止
-            sudo lsof -i tcp:8080 | grep LISTEN | awk '{print $2}' | xargs -r sudo kill -9 || true
-            # 停止舊的容器
-            sudo docker ps -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker stop || true
-            sudo docker ps -a -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker rm || true
-            # 清理 Docker 容器和端口
-            sudo docker system prune -f
-            # 更新容器鏡像並重新啟動服務
+            # 停止所有容器，避免端口占用
+            sudo docker stop $(sudo docker ps -q) || true
+            sudo docker rm $(sudo docker ps -a -q) || true
+            # 清理 Docker 的系統資源
+            sudo docker system prune -a -f
+            # 拉取最新的 Docker 映像並重新啟動應用
             sudo docker pull lunawewe/my-app:latest
             sudo docker run -d -p 8080:8080 lunawewe/my-app:latest
