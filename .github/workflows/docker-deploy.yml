@@ -51,6 +51,7 @@ jobs:
           docker build -t lunawewe/my-app:${{ github.sha }} .
           docker tag lunawewe/my-app:${{ github.sha }} lunawewe/my-app:latest
 
+
       - name: Push Docker image to Docker Hub  # 推送 Docker 映像到 Docker Hub
         run: |
           docker push lunawewe/my-app:${{ github.sha }}
