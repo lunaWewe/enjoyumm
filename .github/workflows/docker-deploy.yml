@@ -67,10 +67,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            # 停止旧的容器并清理端口
+            sudo docker ps -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker stop || true
+            sudo docker ps -a -q --filter ancestor=lunawewe/my-app:latest | xargs -r sudo docker rm || true
+            # 清理被占用的端口（如有需要）
+            sudo fuser -k 8080/tcp || true
             # 更新容器鏡像並重新啟動服務
             sudo docker pull lunawewe/my-app:latest
-            sudo docker stop $(sudo docker ps -q --filter ancestor=lunawewe/my-app:latest) || true
             sudo docker run -d -p 8080:8080 lunawewe/my-app:latest
-
-
-
