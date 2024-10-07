@@ -1,3 +1,5 @@
+COPY keystore.jks /app/keystore.jks
+
 # 使用 Maven 作為構建階段
 FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
