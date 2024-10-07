@@ -8,14 +8,9 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
 
-# 從構建階段複製應用程序 jar 文件
+# 確保 jar 文件名稱正確匹配
 COPY --from=build /app/target/FinalTest-0.0.1-SNAPSHOT.jar /app/my-app.jar
 
-# 複製 keystore.jks 文件
-COPY keystore.jks /app/keystore.jks
-
-# 暴露應用程序的 HTTPS 端口
+# 替換端口，公開 443 端口
 EXPOSE 443
-
-# 啟動應用程序
 CMD ["java", "-jar", "/app/my-app.jar"]
