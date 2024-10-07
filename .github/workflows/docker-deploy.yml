@@ -63,16 +63,14 @@ jobs:
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ec2-user  # 默認 EC2 使用者
+          username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 停止所有容器，避免端口占用
             sudo docker stop $(sudo docker ps -q) || true
             sudo docker rm $(sudo docker ps -a -q) || true
-            # 清理 Docker 的系統資源
             sudo docker system prune -a -f
-            # 拉取最新的 Docker 映像並重新啟動應用
             sudo docker pull lunawewe/my-app:latest
-            sudo docker run -d -p 80:80 lunawewe/my-app:latest
+            sudo docker run -d -p 443:443 lunawewe/my-app:latest
+     
       

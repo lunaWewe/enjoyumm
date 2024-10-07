@@ -11,5 +11,7 @@ WORKDIR /app
 # 確保 jar 文件名稱正確匹配
 COPY --from=build /app/target/FinalTest-0.0.1-SNAPSHOT.jar /app/my-app.jar
 
-EXPOSE 8080
+# 替換端口，公開 443 端口
+EXPOSE 443
 CMD ["java", "-jar", "/app/my-app.jar"]
+
