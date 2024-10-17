@@ -1,7 +1,9 @@
 package integration;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import integration.ecpayOperator.EcpayFunction;
 import integration.errorMsg.ErrorMessage;
@@ -9,7 +11,6 @@ import integration.exception.EcpayException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 
 public class AllInOneBase {
 	protected static String operatingMode;
@@ -29,50 +30,64 @@ public class AllInOneBase {
 	protected static String createServerOrderUrl;
 	protected static Document verifyDoc;
 	protected static String[] ignorePayment;
-	public AllInOneBase(){
-//		try{
+
+	public AllInOneBase() {
+		try {
 			Document doc;
-			/* when using web project*/
-//			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-//			String configPath = URLDecoder.decode(classLoader.getResource("/payment_conf.xml").getPath(), "UTF-8");
-//			doc = EcpayFunction.xmlParser(configPath);
-			/* when using testing code*/
-			String paymentConfPath = "./src/main/resources/payment_conf.xml";
-			doc = EcpayFunction.xmlParser(paymentConfPath);
-			
+
+			// 使用類路徑的方式讀取 XML 文件，以便在 JAR 和 Docker 中都能正確運行
+			try (InputStream paymentConfStream = getClass().getResourceAsStream("/payment_conf.xml")) {
+				if (paymentConfStream == null) {
+					throw new EcpayException("payment_conf.xml not found in the classpath");
+				}
+
+				// 創建一個臨時文件
+				Path tempFile = Files.createTempFile("payment_conf", ".xml");
+				Files.copy(paymentConfStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
+
+				// 使用臨時文件的路徑
+				doc = EcpayFunction.xmlParser(tempFile.toString());
+
+				// 在解析完成後刪除臨時文件
+				Files.delete(tempFile);
+			}
+
+
+			// 設置文件結構並初始化配置
 			doc.getDocumentElement().normalize();
-			//OperatingMode
-			Element ele = (Element)doc.getElementsByTagName("OperatingMode").item(0);
+			Element ele = (Element) doc.getElementsByTagName("OperatingMode").item(0);
 			operatingMode = ele.getTextContent();
-			//MercProfile
-			ele = (Element)doc.getElementsByTagName("MercProfile").item(0);
+
+			ele = (Element) doc.getElementsByTagName("MercProfile").item(0);
 			mercProfile = ele.getTextContent();
-			//IsProjectContractor
-			ele = (Element)doc.getElementsByTagName("IsProjectContractor").item(0);
+
+			ele = (Element) doc.getElementsByTagName("IsProjectContractor").item(0);
 			isProjectContractor = ele.getTextContent();
-			//MID, HashKey, HashIV, PlatformID
+
 			NodeList nodeList = doc.getElementsByTagName("MInfo");
-			for(int i = 0; i < nodeList.getLength(); i++){
-				ele = (Element)nodeList.item(i);
-				if(ele.getAttribute("name").equalsIgnoreCase(mercProfile)){
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				ele = (Element) nodeList.item(i);
+				if (ele.getAttribute("name").equalsIgnoreCase(mercProfile)) {
 					MerchantID = ele.getElementsByTagName("MerchantID").item(0).getTextContent();
 					HashKey = ele.getElementsByTagName("HashKey").item(0).getTextContent();
 					HashIV = ele.getElementsByTagName("HashIV").item(0).getTextContent();
-					PlatformID = isProjectContractor.equalsIgnoreCase("N")? "" : MerchantID;
+					PlatformID = isProjectContractor.equalsIgnoreCase("N") ? "" : MerchantID;
 				}
 			}
-			// IgnorePayment
-			ele = (Element)doc.getElementsByTagName("IgnorePayment").item(0);
+
+			ele = (Element) doc.getElementsByTagName("IgnorePayment").item(0);
 			nodeList = ele.getElementsByTagName("Method");
 			ignorePayment = new String[nodeList.getLength()];
-			for(int i = 0; i < nodeList.getLength(); i++){
+			for (int i = 0; i < nodeList.getLength(); i++) {
 				ignorePayment[i] = nodeList.item(i).getTextContent();
 			}
-			if(HashKey == null){
+
+			if (HashKey == null) {
 				throw new EcpayException(ErrorMessage.MInfo_NOT_SETTING);
 			}
-//		} catch(UnsupportedEncodingException e){
-//			e.printStackTrace();
-//		}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new EcpayException("Failed to load configuration: " + e.getMessage());
+		}
 	}
 }

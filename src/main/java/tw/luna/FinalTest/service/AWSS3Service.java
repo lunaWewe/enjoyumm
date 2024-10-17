@@ -31,15 +31,15 @@ public class AWSS3Service {
     public AWSS3Service() {
         // 留空，因為 S3Client 的初始化將放在 @PostConstruct 方法中
     }
-    
+
 
     // @PostConstruct 確保在依賴注入完成後進行 S3Client 初始化
     @PostConstruct
     public void init() {
 
-        // 從環境變量中讀取 AWS 憑證
-        String accessKey = System.getenv("AWS_ACCESS_KEY");
-        String secretKey = System.getenv("AWS_SECRET_KEY");
+        // 使用 AWS SDK 預設的環境變量名稱 AWS_ACCESS_KEY_ID 和 AWS_SECRET_ACCESS_KEY
+        String accessKey = System.getenv("AWS_ACCESS_KEY_ID");
+        String secretKey = System.getenv("AWS_SECRET_ACCESS_KEY");
 
         AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
 
@@ -72,11 +72,11 @@ public class AWSS3Service {
             throw new IOException("Error uploading file to S3", e);
         }
     }
-    
+
     public void deleteFile(String fileUrl) {
         // 根據 fileUrl 提取文件名
         String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-        
+
         // 構建刪除請求
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
