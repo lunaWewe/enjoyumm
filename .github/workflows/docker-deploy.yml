@@ -17,7 +17,7 @@ name: CI/CD for Maven Project with Docker
 on:
   push:
     branches:
-      - sev  # 當推送到 fff 分支時觸發工作流
+      - main  # 當推送到分支時觸發工作流
 
 jobs:
   build:
