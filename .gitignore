@@ -1,5 +1,7 @@
-/.idea/
-/.vscode/
-/.DS_Store/
+.idea/
+.vscode/
+.DS_Store
+src/main/resources/*.iml
+target/
 
 
