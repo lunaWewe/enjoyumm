@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         coupons.forEach(couponObj => {
+            // 檢查優惠券是否已使用
+            if (couponObj.used) return; // 跳過已使用的優惠券
+
             const coupon = couponObj.coupon;
 
             // 動態生成優惠券的 HTML 結構
