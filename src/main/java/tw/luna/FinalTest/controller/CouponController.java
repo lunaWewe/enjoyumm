@@ -12,6 +12,7 @@ import tw.luna.FinalTest.dto.UserCouponDTO;
 import tw.luna.FinalTest.model.Coupon;
 import tw.luna.FinalTest.service.CartService;
 import tw.luna.FinalTest.service.CouponService;
+import tw.luna.FinalTest.service.CouponApplicationService;
 
 @RestController
 @CrossOrigin(origins = "http://127.0.0.1:5500", allowCredentials = "true")
@@ -20,10 +21,12 @@ public class CouponController {
 
 	private final CouponService couponService;
 	private final CartService cartService;
+	private final CouponApplicationService couponApplicationService;
 
-	public CouponController(CouponService couponService, CartService cartService) {
+	public CouponController(CouponService couponService, CartService cartService, CouponApplicationService couponApplicationService) {
 		this.couponService = couponService;
 		this.cartService = cartService;
+		this.couponApplicationService = couponApplicationService;
 	}
 
 	@PostMapping("/validate")
@@ -87,7 +90,10 @@ public class CouponController {
 	@PostMapping("/apply-coupon")
 	public ResponseEntity<Map<String, Object>> applyCouponToCart(@RequestParam Long cartId, @RequestParam String couponCode) {
 		try {
-			Map<String, Object> response = cartService.applyCouponToCart(cartId, couponCode);
+			// Calculate total amount in the cart
+			int totalAmount = cartService.calculateTotalAmount(cartId);
+			// Apply coupon using CouponApplicationService
+			Map<String, Object> response = couponApplicationService.applyCouponToCart(cartId, couponCode, totalAmount);
 			return ResponseEntity.ok(response);
 		} catch (RuntimeException e) {
 			Map<String, Object> errorResponse = new HashMap<>();

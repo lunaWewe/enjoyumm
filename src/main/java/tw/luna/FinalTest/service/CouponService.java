@@ -27,41 +27,16 @@ public class CouponService {
 	private final CouponRepository couponRepository;
 	private final UserCouponRepository userCouponRepository;
 	private final UsersRepository userRepository;
+	private final CouponValidationService couponValidationService;
+	private final CouponApplicationService couponApplicationService;
 
-
-	public CouponService(CouponRepository couponRepository, UserCouponRepository userCouponRepository, UsersRepository userRepository) {
+	public CouponService(CouponRepository couponRepository, UserCouponRepository userCouponRepository, UsersRepository userRepository, CouponValidationService couponValidationService, CouponApplicationService couponApplicationService) {
 		this.couponRepository = couponRepository;
 		this.userCouponRepository = userCouponRepository;
 		this.userRepository = userRepository;
-	}
-
-	// 驗證優惠券
-	public Coupon validateCoupon(String code, long userId) {
-		Coupon coupon = couponRepository.findCouponByCode(code);
-
-		if (coupon == null) {
-			throw new IllegalArgumentException("優惠券不存在");
-		}
-
-		if (!coupon.isActive()) {
-			throw new IllegalArgumentException("優惠券已被禁用");
-		}
-
-		if (coupon.getExpiryDate().isBefore(LocalDate.now())) {
-			throw new IllegalArgumentException("優惠券已過期");
-		}
-
-		UserCoupon userCoupon = userCouponRepository.findUserCouponByUserIdAndCouponId(userId, coupon.getCouponId());
-		if (userCoupon == null) {
-			throw new IllegalArgumentException("用戶沒有該優惠券");
-		}
-
-		if (userCoupon.isUsed()) {
-			throw new IllegalArgumentException("優惠券已被使用");
-		}
-
-		return coupon;
-	}
+		this.couponValidationService = couponValidationService;
+        this.couponApplicationService = couponApplicationService;
+    }
 
 	// 發放優惠券給用戶
 	public void issueCouponToUser(long userId, String couponCode) {
@@ -203,7 +178,7 @@ public class CouponService {
 	public Map<String, Object> validateCouponAndReturnDetails(String code, long userId) {
 		Map<String, Object> response = new HashMap<>();
 		try {
-			Coupon coupon = validateCoupon(code, userId);
+			Coupon coupon = couponValidationService.validateCoupon(code, userId);
 			response.put("success", true);
 			response.put("message", "優惠券有效");
 			response.put("discountType", coupon.getDiscountType());
@@ -226,5 +201,10 @@ public class CouponService {
 			response.put("error", e.getMessage());
 		}
 		return response;
+	}
+
+	@Transactional
+	public Map<String, Object> applyCouponToCart(Long cartId, String couponCode, int totalAmount) {
+		return couponApplicationService.applyCouponToCart(cartId, couponCode, totalAmount);
 	}
 }
